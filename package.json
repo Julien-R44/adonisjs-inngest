@@ -44,9 +44,6 @@
   ],
   "author": "Julien Ripouteau <julien@ripouteau.com>",
   "license": "MIT",
-  "dependencies": {
-    "inngest": "^3.45.1"
-  },
   "devDependencies": {
     "@adonisjs/assembler": "^7.8.2",
     "@adonisjs/core": "^6.19.1",
@@ -58,10 +55,12 @@
     "@poppinss/ts-exec": "^1.4.1",
     "@swc/core": "^1.15.2",
     "@types/node": "^24.10.1",
+    "@vinejs/vine": "^4.1.0",
     "c8": "^10.1.3",
     "copyfiles": "^2.4.1",
     "del-cli": "^7.0.0",
     "eslint": "^9.39.1",
+    "inngest": "^3.45.1",
     "prettier": "^3.6.2",
     "release-it": "^19.0.6",
     "ts-node-maintained": "^10.9.6",

@@ -16,12 +16,12 @@ import type {
  *   }
  * }
  */
-interface InngestTypings {}
+export interface InngestTypings {}
 
 /**
  * Extract the Inngest client type from user augmentation
  */
-type InngestClient = InngestTypings extends { client: infer C } ? C : never
+export type InngestClient = InngestTypings extends { client: infer C } ? C : never
 
 /**
  * Utility type for values that can be single or array
@@ -32,6 +32,30 @@ type SingleOrArray<T> = T | T[]
  * Ensure a type is wrapped in an array
  */
 type AsArray<T> = T extends any[] ? T : [T]
+
+/**
+ * Extract event name from trigger configuration
+ */
+type ExtractEventName<T> = T extends { event: infer E } ? (E extends string ? E : never) : never
+
+/**
+ * Extract the event data type from a workflow class
+ */
+type ExtractWorkflowEventData<TWorkflow extends Inngest.Workflow> = GetEvents<
+  InngestClient,
+  true
+>[ExtractEventName<AsArray<TWorkflow['trigger']>[number]>]['data']
+
+/**
+ * Custom invoke function for workflow classes
+ */
+type WorkflowInvoke = <TWorkflowClass extends new (...args: any[]) => Inngest.Workflow>(
+  id: string,
+  opts: {
+    workflow: TWorkflowClass
+    data: ExtractWorkflowEventData<InstanceType<TWorkflowClass>>
+  }
+) => Promise<unknown>
 
 /**
  * Namespace containing type definitions for Inngest workflows in AdonisJS
@@ -46,13 +70,27 @@ export namespace Inngest {
   >
 
   /**
-   * Execution context provided to workflow handlers
+   * Execution context provided to workflow handlers with custom step.invoke
    */
-  export type Context<T extends Inngest.Workflow> = OriginalContext<
-    InngestClient,
-    EventNameFromTrigger<GetEvents<InngestClient, true>, AsArray<T['trigger']>[number]>,
-    Record<never, never>
-  >
+  export type Context<T extends Inngest.Workflow> = Omit<
+    OriginalContext<
+      InngestClient,
+      EventNameFromTrigger<GetEvents<InngestClient, true>, AsArray<T['trigger']>[number]>,
+      Record<never, never>
+    >,
+    'step'
+  > & {
+    step: Omit<
+      OriginalContext<
+        InngestClient,
+        EventNameFromTrigger<GetEvents<InngestClient, true>, AsArray<T['trigger']>[number]>,
+        Record<never, never>
+      >['step'],
+      'invoke'
+    > & {
+      invoke: WorkflowInvoke
+    }
+  }
 
   /**
    * Trigger configuration
