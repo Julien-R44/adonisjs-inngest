@@ -1,0 +1,28 @@
+import vine from '@vinejs/vine'
+import type { Inngest } from 'inngest'
+import { EventSchemas } from 'inngest'
+import app from '@adonisjs/core/services/app'
+import { defineConfig } from '@julr/adonisjs-inngest'
+
+const config = defineConfig({
+  id: app.appName,
+  isDev: app.inDev,
+  schemas: new EventSchemas().fromSchema({
+    'user/user.created': vine.compile(
+      vine.object({
+        id: vine.string().uuid(),
+      }),
+    ),
+  }),
+  workflows: [
+    // () => import('#app/workflows/user_created_workflow'),
+  ],
+})
+
+export default config
+
+declare module '@julr/adonisjs-inngest/types' {
+  interface InngestTypings {
+    client: Inngest<typeof config>
+  }
+}
