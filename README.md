@@ -155,11 +155,11 @@ This package extends Inngest's `step.invoke` to work seamlessly with workflow cl
 ```ts
 export default class ProcessOrderWorkflow implements Inngest.Workflow {
   async handler({ step }: Inngest.Context<ProcessOrderWorkflow>) {
-    // Invoke another workflow using the class (type-safe!)
+    // Invoke another workflow using the class (type-safe)
     await step.invoke('send-confirmation', {
-      workflow: SendEmailWorkflow,  // Pass the workflow class
-      data: { 
-        orderId: event.data.id,      // Automatically typed based on SendEmailWorkflow's trigger
+      workflow: SendEmailWorkflow, // Pass the workflow class
+      data: { // Automatically typed based on SendEmailWorkflow's trigger
+        orderId: event.data.id, 
         email: event.data.email 
       }
     })
@@ -168,6 +168,8 @@ export default class ProcessOrderWorkflow implements Inngest.Workflow {
 ```
 
 The `data` object is automatically typed based on the target workflow's trigger event schema, providing full type safety across workflow boundaries.
+
+See the [official documentation](https://www.inngest.com/docs/reference/functions/step-invoke) for more details on `step.invoke`.
 
 ## Triggering workflows
 
