@@ -1,6 +1,6 @@
 # AdonisJS Inngest
 
-A first-party package to integrate [Inngest](https://www.inngest.com) with AdonisJS applications. Build reliable, type-safe background workflows using Inngest's powerful step functions.
+Small wrapper package to integrate [Inngest](https://www.inngest.com) with AdonisJS applications. Build reliable, type-safe background workflows using Inngest's powerful step functions.
 
 ## Installation
 
