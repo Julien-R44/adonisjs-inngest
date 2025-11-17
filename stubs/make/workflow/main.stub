@@ -1,0 +1,29 @@
+{{{
+  exports({ to: app.makePath('app/workflows', entity.path) })
+}}}
+import { inject } from '@adonisjs/core'
+import logger from '@adonisjs/core/services/logger'
+import type { Inngest } from '@julr/adonisjs-inngest/types'
+
+@inject()
+export default class {{ entity.name }}Workflow implements Inngest.Workflow {
+  options = {
+    id: 'my-workflow-id',
+  } satisfies Inngest.Options
+
+  trigger = {
+
+  } satisfies Inngest.TriggerOptions
+
+  async handler({ event, step }: Inngest.Context<{{ entity.name }}Workflow>) {
+    await step.run('step-1', async () => {
+      console.log('Executing {{ entity.name }} workflow')
+    })
+
+    return { success: true }
+  }
+
+  onFailure({ event, error }: Inngest.Context<{{ entity.name }}Workflow>) {
+    logger.error({ err: error }, 'Workflow failed')
+  }
+}

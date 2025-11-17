@@ -9,6 +9,7 @@ export async function configure(command: ConfigureCommand) {
    */
   await codemods.updateRcFile((rcFile) => {
     rcFile.addProvider('@julr/adonisjs-inngest/inngest_provider')
+    rcFile.addCommand('@julr/adonisjs-inngest/commands')
   })
 
   /**
