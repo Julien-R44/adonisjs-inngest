@@ -35,24 +35,20 @@ import vine from '@vinejs/vine'
 import type { Inngest } from 'inngest'
 import { EventSchemas } from 'inngest'
 import app from '@adonisjs/core/services/app'
-import { defineConfig } from '@julr/adonisjs-inngest'
+import { defineConfig, defineVineValidator } from '@julr/adonisjs-inngest'
 
 const config = defineConfig({
   id: app.appName,
   isDev: app.inDev,
   schemas: new EventSchemas().fromSchema({
-    'user/user.created': vine.compile(
-      vine.object({
-        id: vine.string().uuid(),
-        email: vine.string().email(),
-      }),
-    ),
-    'order/payment.completed': vine.compile(
-      vine.object({
-        orderId: vine.string(),
-        amount: vine.number(),
-      }),
-    ),
+    'user/user.created': defineVineValidator({
+      id: vine.string().uuid(),
+      email: vine.string().email(),
+    }),
+    'order/payment.completed': defineVineValidator({
+      orderId: vine.string(),
+      amount: vine.number(),
+    }),
   }),
   workflows: [
     () => import('#app/workflows/welcome_user_workflow'),
@@ -90,17 +86,18 @@ This will create a new workflow class in `app/workflows/welcome_user_workflow.ts
 import { inject } from '@adonisjs/core'
 import mail from '@adonisjs/mail/services/main'
 import type { Inngest } from '@julr/adonisjs-inngest/types'
+import { defineOptions, defineTrigger } from '@julr/adonisjs-inngest'
 
 @inject()
 export default class WelcomeUserWorkflow implements Inngest.Workflow {
-  options = {
+  options = defineOptions({
     id: 'welcome-user',
     concurrency: 5,
-  } satisfies Inngest.Options
+  })
 
-  trigger = {
+  trigger = defineTrigger({
     event: 'user/user.created',
-  } satisfies Inngest.TriggerOptions
+  })
 
   async handler({ event, step }: Inngest.Context<WelcomeUserWorkflow>) {
     // Send welcome email immediately
@@ -151,6 +148,27 @@ Workflows are defined as classes implementing the `Inngest.Workflow` interface. 
 
 - **onFailure**: Called when the workflow fails, useful for error handling and cleanup
 
+### `step.invoke`
+
+This package extends Inngest's `step.invoke` to work seamlessly with workflow classes:
+
+```ts
+export default class ProcessOrderWorkflow implements Inngest.Workflow {
+  async handler({ step }: Inngest.Context<ProcessOrderWorkflow>) {
+    // Invoke another workflow using the class (type-safe!)
+    await step.invoke('send-confirmation', {
+      workflow: SendEmailWorkflow,  // Pass the workflow class
+      data: { 
+        orderId: event.data.id,      // Automatically typed based on SendEmailWorkflow's trigger
+        email: event.data.email 
+      }
+    })
+  }
+}
+```
+
+The `data` object is automatically typed based on the target workflow's trigger event schema, providing full type safety across workflow boundaries.
+
 ## Triggering workflows
 
 ### From your application
@@ -180,13 +198,13 @@ You can also create cron-based workflows:
 
 ```ts
 export default class DailyReportWorkflow implements Inngest.Workflow {
-  options = {
+  options = defineOptions({
     id: 'daily-report',
-  } satisfies Inngest.Options
+  })
 
-  trigger = {
+  trigger = defineTrigger({
     cron: '0 9 * * *', // Every day at 9 AM
-  } satisfies Inngest.TriggerOptions
+  })
 
   async handler({ step }: Inngest.Context<DailyReportWorkflow>) {
     // Generate and send daily report
