@@ -115,5 +115,7 @@ export namespace Inngest {
  * Inngest configuration type
  */
 export type InngestConfig = Omit<ClientOptions, 'logger'> & {
-  workflows: Array<() => Promise<{ default: new () => Inngest.Workflow }>>
+  // Not checkin if the workflow implements Inngest.Workflow coz otherwize
+  // it creates a circular type reference that tsc cannot handle... Check later
+  workflows: Array<() => Promise<{ default: new (...args: any[]) => any }>>
 }
