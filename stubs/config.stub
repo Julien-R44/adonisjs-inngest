@@ -1,3 +1,6 @@
+{{{
+  exports({ to: app.configPath('inngest.ts') })
+}}}
 import vine from '@vinejs/vine'
 import type { Inngest } from 'inngest'
 import { EventSchemas } from 'inngest'

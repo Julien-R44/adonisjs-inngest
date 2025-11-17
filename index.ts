@@ -7,4 +7,5 @@
 |
 */
 
-export { configure } from './configure.js'
+export { configure } from './configure.ts'
+export { defineConfig } from './src/define_config.ts'

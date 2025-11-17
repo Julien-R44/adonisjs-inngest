@@ -7,7 +7,7 @@ Small wrapper package to integrate [Inngest](https://www.inngest.com) with Adoni
 Install the package from npm registry as follows:
 
 ```bash
-npm i @julr/adonisjs-inngest
+npm i @julr/adonisjs-inngest inngest
 ```
 
 Next, configure the package by running the following command:

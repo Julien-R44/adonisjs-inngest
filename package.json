@@ -12,7 +12,7 @@
     "!build/tests"
   ],
   "exports": {
-    "./types": "./build/types.js",
+    "./types": "./build/src/types.js",
     "./inngest_provider": "./build/providers/inngest_provider.js",
     "./commands": "./build/commands/main.js",
     "./services/main": "./build/services/main.js",
