@@ -53,6 +53,7 @@
     "@japa/assert": "^4.1.1",
     "@japa/runner": "^4.4.0",
     "@poppinss/ts-exec": "^1.4.1",
+    "@release-it/conventional-changelog": "^10.0.2",
     "@swc/core": "^1.15.2",
     "@types/node": "^24.10.1",
     "@vinejs/vine": "^4.1.0",
