@@ -1,7 +1,7 @@
 {
   "name": "@julr/adonisjs-inngest",
   "description": "AdonisJS integration for Inngest workflows",
-  "version": "1.0.0-next.0",
+  "version": "1.0.0-next.1",
   "engines": {
     "node": ">=20.6.0"
   },
