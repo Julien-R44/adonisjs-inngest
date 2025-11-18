@@ -47,6 +47,17 @@ type ExtractWorkflowEventData<TWorkflow extends Inngest.Workflow> = GetEvents<
 >[ExtractEventName<AsArray<TWorkflow['trigger']>[number]>]['data']
 
 /**
+ * Extract the return type of a workflow handler
+ */
+type ExtractWorkflowReturnType<TWorkflow extends Inngest.Workflow> = TWorkflow['handler'] extends (
+  ...args: any[]
+) => infer R
+  ? R extends Promise<infer U>
+    ? U
+    : R
+  : unknown
+
+/**
  * Custom invoke function for workflow classes
  */
 type WorkflowInvoke = <TWorkflowClass extends new (...args: any[]) => Inngest.Workflow>(
@@ -55,7 +66,7 @@ type WorkflowInvoke = <TWorkflowClass extends new (...args: any[]) => Inngest.Wo
     workflow: TWorkflowClass
     data: ExtractWorkflowEventData<InstanceType<TWorkflowClass>>
   }
-) => Promise<unknown>
+) => Promise<ExtractWorkflowReturnType<InstanceType<TWorkflowClass>>>
 
 /**
  * Namespace containing type definitions for Inngest workflows in AdonisJS

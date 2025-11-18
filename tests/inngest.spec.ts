@@ -74,9 +74,11 @@ test.group('typings', () => {
         event: 'user/user.created',
       })
 
-      handler(ctx: Inngest.Context<UserCreatedWorkflow>): void {
+      handler(ctx: Inngest.Context<UserCreatedWorkflow>) {
         // @ts-ignore
         const userId: string = ctx.event.data.id
+
+        return { result: 42 }
       }
     }
 
@@ -89,11 +91,13 @@ test.group('typings', () => {
         id: 'my-workflow',
       })
 
-      handler(ctx: Inngest.Context<any>): void {
-        ctx.step.invoke('another-workflow', {
+      async handler(ctx: Inngest.Context<any>): Promise<void> {
+        const result = await ctx.step.invoke('another-workflow', {
           workflow: UserCreatedWorkflow,
           data: { id: 'some-uuid', name: 'Julian' },
         })
+
+        result.result.toFixed() // should be valid
       }
     }
 
