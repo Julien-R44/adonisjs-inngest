@@ -29,3 +29,9 @@ export function defineVineValidator<Properties extends Record<string, SchemaType
 ): VineObjectValidator<Properties> {
   return vine.compile(vine.object(schema))
 }
+
+export { Inngest } from './inngest.ts'
+export { ServeStrategy } from './strategies/serve.ts'
+export { ConnectStrategy } from './strategies/connect.ts'
+export { type ConnectionStrategy } from './strategies/common.ts'
+export { defineConfig } from './define_config.ts'

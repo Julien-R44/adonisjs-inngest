@@ -1,6 +1,5 @@
-import { Inngest } from 'inngest'
-import { connect } from 'inngest/connect'
 import type { ApplicationService } from '@adonisjs/core/types'
+import { Inngest } from '../src/inngest.ts'
 import type { InngestConfig } from '../src/types.ts'
 
 declare module '@adonisjs/core/types' {
@@ -10,87 +9,38 @@ declare module '@adonisjs/core/types' {
 }
 
 /**
- * AdonisJS provider for Inngest integration.
- * Handles client registration and workflow function creation.
+ * AdonisJS provider for Inngest integration
  */
 export default class InngestProvider {
-  /**
-   * Cache of created Inngest functions, indexed by workflow ID
-   */
-  #functionCache = new Map<string, any>()
-
   constructor(protected app: ApplicationService) {}
 
   /**
-   * Create a single Inngest function from a workflow instance
-   */
-  #createFunction(inngest: Inngest, workflow: any) {
-    const inngestFunction = inngest.createFunction(
-      workflow.options,
-      workflow.trigger,
-      async (ctx) => {
-        const originalInvoke = ctx.step.invoke
-        ctx.step.invoke = this.#createWorkflowInvokeWrapper(originalInvoke)
-        return workflow.handler(ctx as any)
-      }
-    )
-
-    this.#functionCache.set(workflow.options.id, inngestFunction)
-    return inngestFunction
-  }
-
-  /**
-   * Create wrapper for ctx.step.invoke to support workflow classes
-   */
-  #createWorkflowInvokeWrapper(originalInvoke: any) {
-    return async (idOrOptions: any, opts: any): Promise<any> => {
-      if (!opts?.workflow) return originalInvoke(idOrOptions, opts)
-
-      const workflowInstance = new opts.workflow()
-      const functionId = workflowInstance.options.id
-
-      const cachedFunction = this.#functionCache.get(functionId)
-      if (!cachedFunction) throw new Error(`Function with ID "${functionId}" not found in cache`)
-
-      return originalInvoke(idOrOptions, { function: cachedFunction, data: opts.data })
-    }
-  }
-
-  /**
-   * Create Inngest functions from configured workflows
-   */
-  async #createFunctions(inngest: Inngest) {
-    const config = this.app.config.get<InngestConfig>('inngest')
-
-    const workflows = await Promise.all(
-      config.workflows.map(async (importWorkflow) => {
-        const Workflow = await importWorkflow().then((mod) => mod.default)
-        return await this.app.container.make(Workflow)
-      })
-    )
-
-    return workflows.map((workflow) => this.#createFunction(inngest, workflow))
-  }
-
-  /**
-   * Register Inngest client in IoC container
+   * Register Inngest service in IoC container
    */
   register() {
-    const config = this.app.config.get<InngestConfig>('inngest')
-
     this.app.container.singleton('inngest', async () => {
+      const config = this.app.config.get<InngestConfig>('inngest')
       const logger = await this.app.container.make('logger')
-      return new Inngest({ ...config, logger })
+      const router = await this.app.container.make('router')
+      const container = this.app.container
+
+      return new Inngest(container, config, router, logger)
     })
   }
 
   /**
    * Initialize Inngest connection with registered functions
    */
-  async ready() {
+  async start() {
     const inngest = await this.app.container.make('inngest')
-    const functions = await this.#createFunctions(inngest)
+    await inngest.connect()
+  }
 
-    await connect({ apps: [{ client: inngest, functions }] })
+  /**
+   * Gracefully shutdown Inngest connection
+   */
+  async shutdown() {
+    const inngest = await this.app.container.make('inngest')
+    await inngest.shutdown()
   }
 }

@@ -1,7 +1,7 @@
 import app from '@adonisjs/core/services/app'
-import { InngestClient } from '../src/types.ts'
+import { Inngest } from '../src/inngest.ts'
 
-let inngest: InngestClient
+let inngest: Inngest
 
 /**
  * Returns a singleton instance of the Inngest client.

@@ -5,10 +5,11 @@ import { Inngest as InngestLib } from 'inngest'
 import { defineConfig } from '../src/define_config.ts'
 import { EventSchemas } from 'inngest'
 import vine from '@vinejs/vine'
-import { defineOptions, defineTrigger, defineVineValidator } from '../src/index.ts'
+import { ConnectStrategy, defineOptions, defineTrigger, defineVineValidator } from '../src/index.ts'
 
 const config = defineConfig({
   id: 'my-app',
+  connectionStrategy: new ConnectStrategy(),
   schemas: new EventSchemas().fromSchema({
     'user/user.created': defineVineValidator({
       id: vine.string().uuid(),

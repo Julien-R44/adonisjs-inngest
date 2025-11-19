@@ -35,11 +35,12 @@ import vine from '@vinejs/vine'
 import type { Inngest } from 'inngest'
 import { EventSchemas } from 'inngest'
 import app from '@adonisjs/core/services/app'
-import { defineConfig, defineVineValidator } from '@julr/adonisjs-inngest'
+import { defineConfig, defineVineValidator, ServeStrategy } from '@julr/adonisjs-inngest'
 
 const config = defineConfig({
   id: app.appName,
   isDev: app.inDev,
+  connectionStrategy: new ServeStrategy({ servePath: '/api/inngest' }),
   schemas: new EventSchemas().fromSchema({
     'user/user.created': defineVineValidator({
       id: vine.string().uuid(),
@@ -69,7 +70,8 @@ declare module '@julr/adonisjs-inngest/types' {
 
 - **id**: Unique identifier for your Inngest app (usually your app name)
 - **isDev**: Development mode flag, automatically set based on your AdonisJS environment
-- **schemas**: Event schemas for type safety using VineJS validators ( or any standard schemas compatible library)
+- **connectionStrategy**: How to connect to Inngest (see Connection Strategies section)
+- **schemas**: Event schemas for type safety using VineJS validators (or any standard schemas compatible library)
 - **workflows**: Array of workflow imports to register
 
 ## Creating workflows
@@ -214,17 +216,44 @@ export default class DailyReportWorkflow implements Inngest.Workflow {
 }
 ```
 
-## Inngest Connect
+## Connection Strategies
 
-The package uses Inngest's [connect](https://www.inngest.com/docs/setup/connect) method for both development and production environments. Connect allows your app to create an outbound persistent connection to Inngest, enabling horizontal scaling across multiple workers.
+This package supports two connection strategies for communicating with Inngest:
 
-**Key benefits of connect:**
-- **Lowest latency** - Persistent connections enable the lowest latency between your app and Inngest
-- **Elastic horizontal scaling** - Easily add more capacity by running additional workers
-- **Ideal for container runtimes** - Deploy on Kubernetes or ECS without the need of a load balancer for inbound traffic
-- **Simpler long running steps** - Step execution is not bound by platform HTTP timeouts
+### ServeStrategy (HTTP)
 
-When you start your AdonisJS application, the Inngest connection will automatically be established and your workflows will be ready to receive events.
+Uses HTTP endpoints to receive events from Inngest. This is the traditional approach and works well for most use cases:
+
+```ts
+import { ServeStrategy } from '@julr/adonisjs-inngest'
+
+const config = defineConfig({
+  connectionStrategy: new ServeStrategy({
+    servePath: '/api/inngest', // HTTP endpoint path
+    serveHost: 'localhost:3333', // Your app's host
+  }),
+})
+```
+
+### ConnectStrategy (WebSocket)
+
+Uses persistent WebSocket connections for lower latency and better scaling:
+
+```ts
+import { ConnectStrategy } from '@julr/adonisjs-inngest'
+
+const config = defineConfig({
+  connectionStrategy: new ConnectStrategy({
+    // Optional connect-specific options
+  }),
+})
+```
+
+**When to use each:**
+- **ServeStrategy**: Simple setups, development, traditional deployments
+- **ConnectStrategy**: Production environments, container deployments, need for lower latency
+
+For more details on the differences, see the [Inngest documentation on serve](https://www.inngest.com/docs/reference/serve) vs [connect](https://www.inngest.com/docs/setup/connect) methods.
 
 ## Type Safety
 

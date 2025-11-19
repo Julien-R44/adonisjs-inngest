@@ -5,6 +5,7 @@ import type {
   TriggersFromClient,
   ClientOptions,
 } from 'inngest/types'
+import { ConnectionStrategy } from './strategies/common.ts'
 
 /**
  * Interface to be augmented in user-land to provide type-safe Inngest client
@@ -129,4 +130,5 @@ export type InngestConfig = Omit<ClientOptions, 'logger'> & {
   // Not checkin if the workflow implements Inngest.Workflow coz otherwize
   // it creates a circular type reference that tsc cannot handle... Check later
   workflows: Array<() => Promise<{ default: new (...args: any[]) => any }>>
+  connectionStrategy: ConnectionStrategy
 }
